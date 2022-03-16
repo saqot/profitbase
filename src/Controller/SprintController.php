@@ -169,8 +169,8 @@ class SprintController extends AbstractController
 			return $this->invalidJsonResponse("Спринт #{$spId} не найден");
 		}
 
-		$repoTaskUpdate = $doctrine->getRepository(TaskEntity::class);
-		$cntTasks = $repoTaskUpdate->getCountActiveForSprint($spId);
+		$repoTask = $doctrine->getRepository(TaskEntity::class);
+		$cntTasks = $repoTask->getCountActiveForSprint($spId);
 
 		if ($cntTasks) {
 			return $this->invalidJsonResponse("Закрытие спринта #{$spId} не возможно, в нем есть активные задачи.");
