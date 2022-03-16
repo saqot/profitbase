@@ -1,0 +1,48 @@
+{% extends "_layout.html.twig" %}
+{% block content %}
+	<div class="container mt-1">
+		<div class="row justify-content-center">
+			<div class="col-lg-9">
+
+				<div class="card">
+					<div class="card-header">
+						{{ title }}
+						<div class="float-end">
+							<a class="btn btn-outline-secondary btn-sm" href="{{ path('web.homepage.index') }}" role="button">на главную</a>
+						</div>
+					</div>
+					<div class="card-body">
+						<div class="msg"></div>
+						<form action="{{ path }}" method="post">
+							{% if value.id is defined  and value.id %}
+								<input type="text" name="id" value="{{ value.id }}">
+							{% endif %}
+							<input type="hidden" name="token" value="{{ csrf_token('sprint') }}"/>
+							<div class="row g-3 align-items-center mb-3">
+								<div class="col-2">
+									<label for="week" class="form-label">Неделя</label>
+								</div>
+								<div class="col-4">
+									<select class="form-select" autocomplete="off" id="week" name="week">
+										<option value="" disabled {% if value.week == null %}selected{% endif %}>Неделя запуска</option>
+										{% for weekId, weekName in weeks %}
+											<option value="{{ weekId }}" {% if weekId == value.week %}selected{% endif %}>{{ weekName }}</option>
+										{% endfor %}
+									</select>
+								</div>
+								<div class="col-auto">
+									<div id="weekHelp" class="form-text">Укажите желаемую неделю запуска. Сечас {{ curWeek }}</div>
+								</div>
+							</div>
+							<div class="float-end">
+								<button type="submit" class="btn btn-primary btn-sm send">Добавить</button>
+							</div>
+						</form>
+					</div>
+				</div>
+
+			</div>
+		</div>
+
+	</div>
+{% endblock %}

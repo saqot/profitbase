@@ -1,0 +1,53 @@
+{% extends "_layout.html.twig" %}
+{% block content %}
+	<div class="container mt-1">
+		<div class="row justify-content-center">
+			<div class="col-lg-9">
+
+				<div class="card">
+					<div class="card-header">
+						{{ title }}
+						<div class="float-end">
+							<a class="btn btn-outline-secondary btn-sm" href="{{ path('web.homepage.index') }}" role="button">на главную</a>
+						</div>
+					</div>
+					<div class="card-body">
+						<div class="msg"></div>
+						<form action="{{ path }}" method="POST">
+							{% if value.id is defined  and value.id %}
+								<input type="text" name="id" value="{{ value.id }}">
+							{% endif %}
+							{% if value.sprintId is defined and value.sprintId %}
+								<input type="hidden" name="sprintId" value="{{ value.sprintId }}">
+							{% endif %}
+							<input type="hidden" name="token" value="{{ csrf_token('task') }}"/>
+
+							<div class="mb-3">
+								<label for="title" class="form-label">Заголовок</label>
+								<input type="text" class="form-control" id="title" name="title" value="{{ value.title | raw }}" required
+									   autocomplete="off">
+							</div>
+							<div class="mb-3">
+								<label for="description" class="form-label">Описание задачи</label>
+								<textarea class="form-control" id="description" name="description" rows="3" required
+										  autocomplete="off">{{ value.description | raw }}</textarea>
+							</div>
+							<div class="mb-3">
+								<div class="mb-3">
+									<label for="estimation" class="form-label">Оценочное время выполнения в днях</label>
+									<input type="text" class="form-control" id="estimation" name="estimation" value="{{ value.estimation }}" required
+										   autocomplete="off">
+								</div>
+							</div>
+							<div class="float-end">
+								<button type="submit" class="btn btn-primary btn-sm send">{{ isNewTask ? 'Добавить' : 'Сохранить' }}</button>
+							</div>
+						</form>
+					</div>
+				</div>
+
+			</div>
+		</div>
+
+	</div>
+{% endblock %}

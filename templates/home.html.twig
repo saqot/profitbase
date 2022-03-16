@@ -1,0 +1,35 @@
+{% extends "_layout.html.twig" %}
+{% import "sprint_accordion_macro.html.twig" as accordion %}
+{% block content %}
+	<div class="container mt-1">
+		<div class="row justify-content-center">
+			<div class="col-lg-12">
+
+				<div class="card">
+					<div class="card-header">
+						Спринты
+						<div class="float-end">
+							<a class="btn btn-outline-secondary btn-sm" href="{{ path('web.sprint.add_new_form') }}" role="button">Добавить спринт</a>
+						</div>
+					</div>
+				</div>
+
+				{% if sprints|length %}
+					<div class="msg-sprint"></div>
+					<div class="accordion mt-1" id="accordione">
+						{% for sprint in sprints %}
+							<div class="accordion-item">
+								{{ accordion.row(sprint, loop) }}
+							</div>
+						{% endfor %}
+					</div>
+				{% else %}
+					<div class="alert alert-secondary mt-1" role="alert">
+						Активных спринтов пока нет. Возможно это и хорошо :)
+					</div>
+				{% endif %}
+			</div>
+		</div>
+
+	</div>
+{% endblock %}
