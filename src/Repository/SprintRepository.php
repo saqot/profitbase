@@ -104,4 +104,82 @@ class SprintRepository extends EntityRepository
 		}
 		return $ids;
 	}
+
+	public function getEndingsForClose()
+	{
+		$conn = $this->_em->getConnection();
+
+		$startAt = date("Y-m-d");
+
+		$sql = "SELECT
+       			s.id AS `s.id`,
+				s.is_active AS `s.isActive`,
+				s.start_at AS `s.startAt`,
+                t.id AS `t.id`,
+				t.is_active AS `t.isActive`
+            FROM
+                `sprints` s
+            LEFT JOIN (select id, is_active, sprint_id  from `tasks`  WHERE is_active = '1') t ON s.id = t.sprint_id
+            WHERE  s.is_active = '1' AND s.start_at < '{$startAt}'";
+
+		$sql = preg_replace('/[\s\n\r]+/', ' ', $sql);
+		$rows = $conn->fetchAllAssociative($sql);
+
+		$itmes = [];
+		foreach ($rows as $row) {
+			$spId = $row['s.id'];
+			if (empty($itmes[$spId])) {
+				$itmes[$spId] = [
+					'id'       => $spId,
+					'startAt'  => $row['s.startAt'],
+					'isActive' => boolval($row['s.isActive']),
+					'tasks'    => [],
+				];
+			}
+
+			if ($row['t.id']) {
+				$itmes[$spId]['tasks'][] = [
+					'id'       => $row['t.id'],
+					'isActive' => boolval($row['t.isActive']),
+				];
+			}
+
+
+		}
+		$itmes = array_values($itmes);
+
+		return $itmes;
+	}
+
+	/**
+	 * @param string $sprintId
+	 * @return int|string
+	 * @throws Exception
+	 */
+	public function setClose(string $sprintId)
+	{
+		$conn = $this->_em->getConnection();
+		$sprintId = $conn->quote($sprintId);
+		return $conn->executeStatement("UPDATE `sprints` SET `is_active` = '0' WHERE `id` = {$sprintId}; ");
+	}
+
+	/**
+	 * @return mixed|null
+	 * @throws Exception
+	 */
+	public function getIdNearSprint()
+	{
+		$startAt = date("Y-m-d", mktime(0, 0, 0, 1, (App::getCurWeek() * 7)));
+
+		$conn = $this->_em->getConnection();
+		$id = $conn->fetchFirstColumn("SELECT s.id FROM `sprints` s WHERE  s.start_at >= '{$startAt}' AND s.is_active >= '1' LIMIT 1");
+
+		if ($id) {
+			$id = $id[0];
+		} else {
+			$id = null;
+		}
+
+		return $id;
+	}
 }

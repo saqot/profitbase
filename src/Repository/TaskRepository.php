@@ -42,4 +42,20 @@ class TaskRepository extends EntityRepository
 
 		return !boolval($rows[0]);
 	}
+
+	/**
+	 * @param string $taskId
+	 * @param string $sprintId
+	 * @return int|string
+	 * @throws Exception
+	 */
+	public function changeSprint(string $taskId, string $sprintId)
+	{
+		$conn = $this->_em->getConnection();
+		$sprintId = $conn->quote($sprintId);
+		$taskId = $conn->quote($taskId);
+		return $conn->executeStatement("UPDATE `tasks` SET `sprint_id` = {$sprintId} WHERE `id` = {$taskId}; ");
+	}
+
+
 }
