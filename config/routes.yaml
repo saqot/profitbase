@@ -1,0 +1,36 @@
+web.homepage.index:
+    path: /
+    controller: App\Controller\HomeController::listSprintTasksAction
+
+web.sprint.add_new_form:
+    path: /sprint/new
+    controller: App\Controller\SprintController::addNewForm
+
+api.sprint.update:
+    path: /api/sprints
+    controller: App\Controller\SprintController::updateAction
+
+api.sprint.close:
+    path: /api/sprints/close
+    controller: App\Controller\SprintController::closeAction
+
+
+web.task.add_new_form:
+    path: /task/new/{sprintId}
+    controller: App\Controller\TaskController::showForm
+    requirements: { sprintId: '\d+-\d+' }
+    defaults: { taskId: null}
+
+web.task.edit_form:
+    path: /task/edit/{taskId}
+    controller: App\Controller\TaskController::showForm
+    requirements: { taskId: 'TASK-\w+|\d+' }
+    defaults: { sprintId: null}
+
+api.task.update:
+    path: /api/tasks
+    controller: App\Controller\TaskController::updateAction
+
+api.task.close:
+    path: /api/tasks/close
+    controller: App\Controller\TaskController::closeAction
