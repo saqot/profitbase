@@ -2,6 +2,7 @@
 
 namespace App\Repository;
 
+use App\Helper\App;
 use Doctrine\DBAL\Exception;
 use Doctrine\ORM\EntityRepository;
 
@@ -49,7 +50,7 @@ class SprintRepository extends EntityRepository
 				t.estimation AS `t.estimation`
             FROM
                 `sprints` s
-            LEFT JOIN (select * from `tasks`  WHERE is_active = '1') t ON s.id = t.sprint_id
+            LEFT JOIN (select id, is_active, title, description, estimation, sprint_id, at  from `tasks`  WHERE is_active = '1') t ON s.id = t.sprint_id
             WHERE  s.is_active = '1'
             ORDER BY s.year, s.week, t.at";
 
@@ -85,5 +86,22 @@ class SprintRepository extends EntityRepository
 		$itmes = array_values($itmes);
 
 		return $itmes;
+	}
+
+	/**
+	 * @return array
+	 * @throws Exception
+	 */
+	public function getReadyIds()
+	{
+		$startAt = date("Y-m-d", mktime(0, 0, 0, 1, ((App::getCurWeek() - 1) * 7)));
+
+		$conn = $this->_em->getConnection();
+		$ids = $conn->fetchAllAssociative("SELECT s.id FROM `sprints` s WHERE  s.start_at >= '{$startAt}'");
+
+		if ($ids) {
+			$ids = array_column($ids, 'id');
+		}
+		return $ids;
 	}
 }

@@ -26,17 +26,32 @@ class SprintController extends AbstractController
 {
 
 	/**
+	 * @param ManagerRegistry $doctrine
 	 * @return Response
+	 * @throws Exception
 	 */
-	public function addNewForm()
+	public function addNewForm(ManagerRegistry $doctrine)
 	{
+		$repoSprint = $doctrine->getRepository(SprintEntity::class);
+		$readySprintIds = $repoSprint->getReadyIds();
+
 		$curWeek = App::getCurWeek();
 		$weeks = [];
-		for ($i = 0; $i <= 12; $i++) {
+		for ($i = 0; ; $i++) {
 			$week = ($curWeek + $i);
 			$day = $week * 7;
-			$date = date("d.m.Y", mktime(0, 0, 0, 1, $day));
+			$mktime = mktime(0, 0, 0, 1, $day);
+			$date = date("d.m.Y", $mktime);
+			$year = date("y", $mktime);
+
+			if (in_array("{$year}-{$week}", $readySprintIds)) {
+				continue;
+			}
+
 			$weeks[$week] = "{$week} (с {$date})";
+			if (count($weeks) >= 12) {
+				break;
+			}
 		}
 
 		return $this->render('sprint_form.html.twig', [
@@ -87,24 +102,21 @@ class SprintController extends AbstractController
 			return $this->invalidJsonResponse('Неделя не может быть из прошлого');
 		}
 
-		$at = new DateTime();
-		$year = $at->format("y");
+		$startAt = date("d.m.Y", mktime(0, 0, 0, 1, $week * 7));
+		$startAt = new DateTime($startAt);
 
-		$spId = "{$year}-{$week}";
+		$spId = "{$startAt->format("y")}-{$week}";
 		$repoSprint = $doctrine->getRepository(SprintEntity::class);
 		if (!$repoSprint->isUnique($spId)) {
 			return $this->invalidJsonResponse("В этом году спринт на указанную неделю уже существует.");
 		}
 
-		$startAt = date("d.m.Y", mktime(0, 0, 0, 1, $week * 7));
-		$startAt = new DateTime($startAt);
-
 		$sp = (new SprintEntity())
 			->setId($spId)
 			->setIsActive(true)
 			->setWeek($week)
-			->setYear($year)
-			->setCreateAt($at)
+			->setYear($startAt->format("Y"))
+			->setCreateAt(new DateTime())
 			->setStartAt($startAt);
 
 		$em = $doctrine->getManager();
