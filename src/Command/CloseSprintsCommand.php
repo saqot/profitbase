@@ -51,7 +51,6 @@ class CloseSprintsCommand extends Command
 
 	protected function configure()
 	{
-
 	}
 
 	/**
@@ -64,7 +63,6 @@ class CloseSprintsCommand extends Command
 	protected function execute(InputInterface $input, OutputInterface $output)
 	{
 		$io = new SymfonyStyle($input, $output);
-		$this->output = $output;
 
 		$repoSprint = $this->em->getRepository(SprintEntity::class);
 		$repoTask = $this->em->getRepository(TaskEntity::class);
@@ -76,12 +74,11 @@ class CloseSprintsCommand extends Command
 			return Command::SUCCESS;
 		}
 
-
 		$closeSprints = 0;
 		$movedTasks = 0;
 
 		if ($sprints) {
-			$bar = new ProgressBar($this->output, count($sprints));
+			$bar = new ProgressBar($output, count($sprints));
 			$bar->start();
 
 			foreach ($sprints as $sp) {
