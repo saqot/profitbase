@@ -3,17 +3,17 @@
 namespace App\Controller;
 
 use App\Entity\SprintEntity;
-use App\Entity\TaskEntity;
 use App\Helper\App;
+use App\Repository\SprintRepository;
+use App\Repository\TaskRepository;
 use DateTime;
 use Doctrine\DBAL\Exception;
-use Doctrine\Persistence\ManagerRegistry;
+use Doctrine\ORM\EntityManagerInterface;
 use Symfony\Bundle\FrameworkBundle\Controller\AbstractController;
 use Symfony\Component\HttpFoundation\JsonResponse;
 use Symfony\Component\HttpFoundation\RedirectResponse;
 use Symfony\Component\HttpFoundation\Request;
 use Symfony\Component\HttpFoundation\Response;
-use Symfony\Component\Security\Csrf\CsrfTokenManagerInterface;
 
 /**
  * class:  SprintController
@@ -26,13 +26,12 @@ class SprintController extends AbstractController
 {
 
 	/**
-	 * @param ManagerRegistry $doctrine
+	 * @param SprintRepository $repoSprint
 	 * @return Response
 	 * @throws Exception
 	 */
-	public function addNewForm(ManagerRegistry $doctrine)
+	public function addNewForm(SprintRepository $repoSprint)
 	{
-		$repoSprint = $doctrine->getRepository(SprintEntity::class);
 		$readySprintIds = $repoSprint->getReadyIds();
 
 		$curWeek = App::getCurWeek();
@@ -70,13 +69,12 @@ class SprintController extends AbstractController
 
 	/**
 	 * @param Request $request
-	 * @param ManagerRegistry $doctrine
-	 * @param CsrfTokenManagerInterface $csrfTokenManager
+	 * @param SprintRepository $repoSprint
+	 * @param EntityManagerInterface $em
 	 * @return JsonResponse|RedirectResponse
 	 * @throws Exception
-	 * @throws \Exception
 	 */
-	public function updateAction(Request $request, ManagerRegistry $doctrine, CsrfTokenManagerInterface $csrfTokenManager)
+	public function updateAction(Request $request, SprintRepository $repoSprint, EntityManagerInterface $em)
 	{
 		if (!$request->isXmlHttpRequest()) {
 			return $this->redirectToRoute('web.sprint.add_new_form');
@@ -106,7 +104,6 @@ class SprintController extends AbstractController
 		$startAt = new DateTime($startAt);
 
 		$spId = "{$startAt->format("y")}-{$week}";
-		$repoSprint = $doctrine->getRepository(SprintEntity::class);
 		if (!$repoSprint->isUnique($spId)) {
 			return $this->invalidJsonResponse("В этом году спринт на указанную неделю уже существует.");
 		}
@@ -118,8 +115,6 @@ class SprintController extends AbstractController
 			->setYear($startAt->format("Y"))
 			->setCreateAt(new DateTime())
 			->setStartAt($startAt);
-
-		$em = $doctrine->getManager();
 
 		$em->persist($sp);
 		$em->flush();
@@ -137,12 +132,13 @@ class SprintController extends AbstractController
 
 	/**
 	 * @param Request $request
-	 * @param ManagerRegistry $doctrine
-	 * @param CsrfTokenManagerInterface $csrfTokenManager
+	 * @param TaskRepository $repoTask
+	 * @param SprintRepository $repoSprint
+	 * @param EntityManagerInterface $em
 	 * @return JsonResponse|RedirectResponse
 	 * @throws Exception
 	 */
-	public function closeAction(Request $request, ManagerRegistry $doctrine, CsrfTokenManagerInterface $csrfTokenManager)
+	public function closeAction(Request $request, TaskRepository $repoTask, SprintRepository $repoSprint, EntityManagerInterface $em)
 	{
 		if (!$request->isXmlHttpRequest()) {
 			return $this->redirectToRoute('web.homepage.index');
@@ -163,13 +159,11 @@ class SprintController extends AbstractController
 			return $this->invalidJsonResponse('Не найден ID спринта');
 		}
 
-		$repoSprint = $doctrine->getRepository(SprintEntity::class);
 		$sp = $repoSprint->find($spId);
 		if (!$sp) {
 			return $this->invalidJsonResponse("Спринт #{$spId} не найден");
 		}
 
-		$repoTask = $doctrine->getRepository(TaskEntity::class);
 		$cntTasks = $repoTask->getCountActiveForSprint($spId);
 
 		if ($cntTasks) {
@@ -177,7 +171,6 @@ class SprintController extends AbstractController
 		}
 
 		$sp->setIsActive(false);
-		$em = $doctrine->getManager();
 
 		$em->persist($sp);
 		$em->flush();

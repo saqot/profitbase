@@ -2,9 +2,11 @@
 
 namespace App\Repository;
 
+use App\Entity\SprintEntity;
 use App\Helper\App;
+use Doctrine\Bundle\DoctrineBundle\Repository\ServiceEntityRepository;
 use Doctrine\DBAL\Exception;
-use Doctrine\ORM\EntityRepository;
+use Doctrine\Persistence\ManagerRegistry;
 
 /**
  * class:  SprintsRepository
@@ -13,8 +15,13 @@ use Doctrine\ORM\EntityRepository;
  * @package  App\Repository
  * -----------------------------------------------------
  */
-class SprintRepository extends EntityRepository
+class SprintRepository extends ServiceEntityRepository
 {
+	public function __construct(ManagerRegistry $registry)
+	{
+		parent::__construct($registry, SprintEntity::class);
+	}
+
 	/**
 	 * @param string $id
 	 * @return bool
@@ -53,6 +60,7 @@ class SprintRepository extends EntityRepository
             LEFT JOIN (select id, is_active, title, description, estimation, sprint_id, at  from `tasks`  WHERE is_active = '1') t ON s.id = t.sprint_id
             WHERE  s.is_active = '1'
             ORDER BY s.year, s.week, t.at";
+
 
 		$sql = preg_replace('/[\s\n\r]+/', ' ', $sql);
 		$rows = $conn->fetchAllAssociative($sql);

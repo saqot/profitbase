@@ -2,8 +2,10 @@
 
 namespace App\Repository;
 
+use App\Entity\TaskEntity;
+use Doctrine\Bundle\DoctrineBundle\Repository\ServiceEntityRepository;
 use Doctrine\DBAL\Exception;
-use Doctrine\ORM\EntityRepository;
+use Doctrine\Persistence\ManagerRegistry;
 
 /**
  * class:  TasksRepository
@@ -12,8 +14,13 @@ use Doctrine\ORM\EntityRepository;
  * @package  App\Repository
  * -----------------------------------------------------
  */
-class TaskRepository extends EntityRepository
+class TaskRepository extends ServiceEntityRepository
 {
+
+	public function __construct(ManagerRegistry $registry)
+	{
+		parent::__construct($registry, TaskEntity::class);
+	}
 
 	/**
 	 * @param string $sprintId

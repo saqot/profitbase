@@ -2,11 +2,8 @@
 
 namespace App\Command;
 
-use App\Entity\SprintEntity;
-use App\Entity\TaskEntity;
-use Doctrine\DBAL\Connection;
-use Doctrine\ORM\EntityManager;
-use Doctrine\Persistence\ManagerRegistry;
+use App\Repository\SprintRepository;
+use App\Repository\TaskRepository;
 use Exception;
 use Symfony\Component\Console\Command\Command;
 use Symfony\Component\Console\Helper\ProgressBar;
@@ -28,24 +25,19 @@ class CloseSprintsCommand extends Command
 	 * @var string
 	 */
 	protected static $defaultName = 'cron:closeSprints';
-	protected OutputInterface $output;
-
-	protected EntityManager $em;
-	protected Connection $conn;
+	private TaskRepository $repoTask;
+	private SprintRepository $repoSprint;
 
 	/**
 	 * UploadImageAppCommand constructor.
-	 * @param ManagerRegistry $doctrine
+	 * @param TaskRepository $repoTask
+	 * @param SprintRepository $repoSprint
 	 */
-	public function __construct(ManagerRegistry $doctrine)
+	public function __construct(TaskRepository $repoTask, SprintRepository $repoSprint)
 	{
-		$conn = $doctrine->getConnection();
-		/** @var $conn Connection */
-		$this->conn = $conn;
+		$this->repoTask = $repoTask;
+		$this->repoSprint = $repoSprint;
 
-		$em = $doctrine->getManager();
-		/** @var $em EntityManager */
-		$this->em = $em;
 		parent::__construct();
 	}
 
@@ -64,11 +56,9 @@ class CloseSprintsCommand extends Command
 	{
 		$io = new SymfonyStyle($input, $output);
 
-		$repoSprint = $this->em->getRepository(SprintEntity::class);
-		$repoTask = $this->em->getRepository(TaskEntity::class);
+		$sprints = $this->repoSprint->getEndingsForClose();
+		$nearSprintId = $this->repoSprint->getIdNearSprint();
 
-		$sprints = $repoSprint->getEndingsForClose();
-		$nearSprintId = $repoSprint->getIdNearSprint();
 		if (!$nearSprintId and $sprints) {
 			$io->warning("Есть не закрытые спринты, но не найден спринт для переноса задач ((( Останавливаемся, требуется ручное вмешательство.");
 			return Command::SUCCESS;
@@ -84,10 +74,10 @@ class CloseSprintsCommand extends Command
 			foreach ($sprints as $sp) {
 				$bar->advance();
 				foreach ($sp['tasks'] as $task) {
-					$repoTask->changeSprint($task['id'], $nearSprintId);
+					$this->repoTask->changeSprint($task['id'], $nearSprintId);
 					$movedTasks++;
 				}
-				$repoSprint->setClose($sp['id']);
+				$this->repoSprint->setClose($sp['id']);
 				$closeSprints++;
 			}
 

@@ -3,15 +3,17 @@
 namespace App\Controller;
 
 use App\DTO\RequestTaskDTO;
-use App\Entity\SprintEntity;
 use App\Entity\TaskEntity;
+use App\Repository\SprintRepository;
 use App\Repository\TaskRepository;
+use DateTime;
 use Doctrine\DBAL\Exception;
-use Doctrine\Persistence\ManagerRegistry;
+use Doctrine\ORM\EntityManagerInterface;
 use Symfony\Bundle\FrameworkBundle\Controller\AbstractController;
 use Symfony\Component\HttpFoundation\JsonResponse;
+use Symfony\Component\HttpFoundation\RedirectResponse;
 use Symfony\Component\HttpFoundation\Request;
-use Symfony\Component\Security\Csrf\CsrfTokenManagerInterface;
+use Symfony\Component\HttpFoundation\Response;
 
 /**
  * class:  TaskController
@@ -22,7 +24,13 @@ use Symfony\Component\Security\Csrf\CsrfTokenManagerInterface;
  */
 class TaskController extends AbstractController
 {
-	public function showForm(ManagerRegistry $doctrine, $sprintId = null, $taskId = null)
+	/**
+	 * @param TaskRepository $repoTask
+	 * @param $sprintId
+	 * @param $taskId
+	 * @return Response
+	 */
+	public function showForm(TaskRepository $repoTask, $sprintId = null, $taskId = null)
 	{
 		if ($sprintId != null) {
 			$title = "Новое задание для спринта #{$sprintId}";
@@ -42,7 +50,6 @@ class TaskController extends AbstractController
 		];
 
 		if ($taskId) {
-			$repoTask = $doctrine->getRepository(TaskEntity::class);
 			$task = $repoTask->find($taskId);
 			if (!$task) {
 				throw $this->createNotFoundException("Задача #{$taskId} не найдена");
@@ -66,8 +73,15 @@ class TaskController extends AbstractController
 		]);
 	}
 
-
-	public function updateAction(Request $request, ManagerRegistry $doctrine, CsrfTokenManagerInterface $csrfTokenManager)
+	/**
+	 * @param Request $request
+	 * @param TaskRepository $repoTask
+	 * @param SprintRepository $repoSprint
+	 * @param EntityManagerInterface $em
+	 * @return JsonResponse|RedirectResponse
+	 * @throws Exception
+	 */
+	public function updateAction(Request $request, TaskRepository $repoTask, SprintRepository $repoSprint, EntityManagerInterface $em)
 	{
 		if (!$request->isXmlHttpRequest()) {
 			return $this->redirectToRoute('web.task.add_new_form');
@@ -78,9 +92,6 @@ class TaskController extends AbstractController
 		if (!$this->isCsrfTokenValid('task', $token)) {
 			return $this->invalidJsonResponse('Csrf token не валиден. Обновите страницу и попробуйте еще раз.');
 		}
-
-		$repoTask = $doctrine->getRepository(TaskEntity::class);
-		$repoSprint = $doctrine->getRepository(SprintEntity::class);
 
 		$rTaskDTO = new RequestTaskDTO($oRrequest->all());
 
@@ -94,7 +105,7 @@ class TaskController extends AbstractController
 		} else {
 			$task = (new TaskEntity())
 				->setIsActive(true)
-				->setAt(new \DateTime());
+				->setAt(new DateTime());
 
 
 			$taskIdNew = $this->genNewTaskId($repoTask);
@@ -157,9 +168,6 @@ class TaskController extends AbstractController
 			$task->setEstimation($estimation);
 		}
 
-
-		$em = $doctrine->getManager();
-
 		$em->persist($task);
 		$em->flush();
 
@@ -180,7 +188,7 @@ class TaskController extends AbstractController
 
 	}
 
-	public function closeAction(Request $request, ManagerRegistry $doctrine, CsrfTokenManagerInterface $csrfTokenManager)
+	public function closeAction(Request $request, TaskRepository $repoTask, EntityManagerInterface $em)
 	{
 		if (!$request->isXmlHttpRequest()) {
 			return $this->redirectToRoute('web.homepage.index');
@@ -201,14 +209,12 @@ class TaskController extends AbstractController
 			return $this->invalidJsonResponse('Не найден ID задачи');
 		}
 
-		$repoTask = $doctrine->getRepository(TaskEntity::class);
 		$task = $repoTask->find($taskId);
 		if (!$task) {
 			return $this->invalidJsonResponse("Задача #{$taskId} не найдена");
 		}
 
 		$task->setIsActive(false);
-		$em = $doctrine->getManager();
 
 		$em->persist($task);
 		$em->flush();

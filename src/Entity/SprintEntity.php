@@ -2,6 +2,7 @@
 
 namespace App\Entity;
 
+use App\Repository\SprintRepository;
 use DateTime;
 use Doctrine\Common\Collections\ArrayCollection;
 use Doctrine\ORM\Mapping as ORM;
@@ -14,7 +15,7 @@ use Doctrine\ORM\PersistentCollection;
  * @package  App\Entity
  * -----------------------------------------------------
  * @orm\Table( name="sprints" )
- * @ORM\Entity(repositoryClass="App\Repository\SprintRepository")
+ * @ORM\Entity(repositoryClass=SprintRepository::class)
  * -----------------------------------------------------
  */
 class SprintEntity

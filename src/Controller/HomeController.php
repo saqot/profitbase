@@ -2,8 +2,7 @@
 
 namespace App\Controller;
 
-use App\Entity\SprintEntity;
-use Doctrine\Persistence\ManagerRegistry;
+use App\Repository\SprintRepository;
 use Symfony\Bundle\FrameworkBundle\Controller\AbstractController;
 
 /**
@@ -15,9 +14,8 @@ use Symfony\Bundle\FrameworkBundle\Controller\AbstractController;
  */
 class HomeController extends AbstractController
 {
-	public function listSprintTasksAction(ManagerRegistry $doctrine)
+	public function listSprintTasksAction(SprintRepository $repoSprint)
 	{
-		$repoSprint = $doctrine->getRepository(SprintEntity::class);
 		$sprints = $repoSprint->getFullListForHomePage();
 
 		return $this->render('home.html.twig', [

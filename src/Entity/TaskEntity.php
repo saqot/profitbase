@@ -2,6 +2,7 @@
 
 namespace App\Entity;
 
+use App\Repository\TaskRepository;
 use DateTime;
 use Doctrine\ORM\Mapping as ORM;
 
@@ -12,7 +13,7 @@ use Doctrine\ORM\Mapping as ORM;
  * @package  App\Entity
  * -----------------------------------------------------
  * @orm\Table( name="tasks" )
- * @ORM\Entity(repositoryClass="App\Repository\TaskRepository")
+ * @ORM\Entity(repositoryClass=TaskRepository::class)
  * -----------------------------------------------------
  */
 class TaskEntity
