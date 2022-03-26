@@ -5,7 +5,7 @@ namespace App\DataFixtures;
 use App\Entity\SprintEntity;
 use App\Entity\TaskEntity;
 use Doctrine\Bundle\FixturesBundle\Fixture;
-use Doctrine\Bundle\FixturesBundle\FixtureGroupInterface;
+use Doctrine\Common\DataFixtures\DependentFixtureInterface;
 use Doctrine\Persistence\ObjectManager;
 
 /**
@@ -15,10 +15,10 @@ use Doctrine\Persistence\ObjectManager;
  * @package  App\DataFixtures
  * -----------------------------------------------------
  */
-class TaskFixtures extends Fixture implements FixtureGroupInterface
+class TaskFixtures extends Fixture implements DependentFixtureInterface
 {
 	/**
-	 * php bin/console doctrine:fixtures:load --group=task
+	 * php bin/console doctrine:fixtures:load
 	 * @param ObjectManager $manager
 	 * @return void
 	 */
@@ -29,7 +29,7 @@ class TaskFixtures extends Fixture implements FixtureGroupInterface
 		$sprints = $repoSprint->findAll();
 
 		foreach ($sprints as $sprint) {
-			$cnt = mt_rand(3, 7);
+			$cnt = mt_rand(0, 2);
 			$hourMax = 2;
 			for ($i = 0; $i < $cnt; $i++) {
 				$hourMax = max($hourMax, $i);
@@ -56,8 +56,10 @@ class TaskFixtures extends Fixture implements FixtureGroupInterface
 
 	}
 
-	public static function getGroups(): array
+	public function getDependencies()
 	{
-		return ['task'];
+		return [
+			SprintFixtures::class,
+		];
 	}
 }

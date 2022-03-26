@@ -5,7 +5,6 @@ namespace App\DataFixtures;
 use App\Entity\SprintEntity;
 use DateTime;
 use Doctrine\Bundle\FixturesBundle\Fixture;
-use Doctrine\Bundle\FixturesBundle\FixtureGroupInterface;
 use Doctrine\Persistence\ObjectManager;
 
 /**
@@ -15,10 +14,10 @@ use Doctrine\Persistence\ObjectManager;
  * @package  App\DataFixtures
  * -----------------------------------------------------
  */
-class SprintFixtures extends Fixture implements FixtureGroupInterface
+class SprintFixtures extends Fixture
 {
 	/**
-	 * php bin/console doctrine:fixtures:load --group=sprint
+	 * php bin/console doctrine:fixtures:load
 	 * @param ObjectManager $manager
 	 * @return void
 	 */
@@ -56,8 +55,4 @@ class SprintFixtures extends Fixture implements FixtureGroupInterface
 
 	}
 
-	public static function getGroups(): array
-	{
-		return ['sprint'];
-	}
 }
