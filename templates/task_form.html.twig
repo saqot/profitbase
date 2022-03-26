@@ -15,7 +15,7 @@
 						<div class="msg"></div>
 						<form action="{{ path }}" method="POST">
 							{% if value.id is defined  and value.id %}
-								<input type="text" name="id" value="{{ value.id }}">
+								<input type="hidden" name="id" value="{{ value.id }}">
 							{% endif %}
 							{% if value.sprintId is defined and value.sprintId %}
 								<input type="hidden" name="sprintId" value="{{ value.sprintId }}">
